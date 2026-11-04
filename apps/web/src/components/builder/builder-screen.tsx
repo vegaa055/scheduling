@@ -2,10 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { AlertTriangle, CheckCircle2, ChevronRight, Lock, LockOpen, Play, Send, Square, Wand2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronRight, Lock, LockOpen, Play, Send, Square, Upload, Wand2 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import type { SectionDTO, SolverRunDTO } from "@sched/shared";
+import type { DayCode, SectionDTO, SolverRunDTO } from "@sched/shared";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
@@ -19,11 +20,11 @@ import { layoutColumn } from "@/components/calendar/layout";
 import { useMounted } from "@/hooks/use-mounted";
 import { api, ApiError } from "@/lib/api";
 import { useMe, usePatterns, useSections, useSolverRun, useSolverRuns, useTerms, useRooms, type PatternDTO } from "@/lib/queries";
-import { parseYmd } from "@/lib/time";
+import { useDefaultTerm } from "@/hooks/use-default-term";
 import { cn } from "@/lib/utils";
 
 const SUBJECT_COLOR: Record<string, string> = { CHEM: "oasis", MATH: "leaf", PHYS: "sky", MCB: "river", CSC: "bloom" };
-const DAYS = [
+const DAYS: { code: DayCode; label: string }[] = [
   { code: "MO", label: "Monday" },
   { code: "TU", label: "Tuesday" },
   { code: "WE", label: "Wednesday" },
@@ -67,18 +68,12 @@ function BuilderInner() {
   const qc = useQueryClient();
   const { data: me } = useMe();
   const { data: terms = [] } = useTerms();
-  const [termId, setTermId] = useState<string>();
+  // Defaults to the next term that isn't under way yet; that's the one being built.
+  const [termId, setTermId] = useDefaultTerm(terms);
   const [seconds, setSeconds] = useState("30");
   const [show, setShow] = useState<"proposed" | "current">("proposed");
   const [filter, setFilter] = useState("");
   const [confirmPublish, setConfirmPublish] = useState(false);
-
-  // Default to the next term that isn't under way yet; that's the one being built.
-  useEffect(() => {
-    if (termId || terms.length === 0) return;
-    const upcoming = terms.find((t) => parseYmd(t.startsOn) > new Date());
-    setTermId((upcoming ?? terms.find((t) => t.isCurrent) ?? terms[0])!.id);
-  }, [terms, termId]);
 
   const term = terms.find((t) => t.id === termId);
   const { data: sections = [], isLoading: sectionsLoading } = useSections(termId);
@@ -391,7 +386,14 @@ function BuilderInner() {
       <section className="mx-5 mb-8 rounded-lg border bg-card">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
           <h2 className="text-sm font-semibold">Sections</h2>
-          <Input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter by course or instructor" className="h-8 w-64" />
+          <div className="flex items-center gap-2">
+            <Input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter by course or instructor" className="h-8 w-64" />
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/admin/import">
+                <Upload /> Import sections
+              </Link>
+            </Button>
+          </div>
         </div>
         <SectionsTable
           sections={sections.filter((s) =>

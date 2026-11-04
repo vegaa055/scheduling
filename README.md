@@ -49,14 +49,28 @@ person; pick one to see the app with their role:
 
 | Person | Role | Good for trying |
 | --- | --- | --- |
-| Rosa Martinez | admin, staff | Everything; approving room requests |
-| Kevin Okafor | scheduler, staff | Schedule builder (solve, apply, publish Spring 2027) |
+| Rosa Martinez | admin, staff | Everything, including Admin (people, rooms, terms) and approving room requests |
+| Kevin Okafor | scheduler, staff | Schedule builder (solve, apply, publish Spring 2027), importing sections, anyone's availability |
 | Priya Raman | staff (Chemistry) | Department calendar, room bookings |
-| David Chen | faculty (Chemistry) | Teaching schedule, office hours |
+| David Chen | faculty (Chemistry) | Teaching schedule, office hours, teaching availability |
 | Jordan Lee | viewer (student) | Read-only access |
 
 `npm run db:seed` resets everything: Fall 2026 is published as class events, Spring 2027 has
 30 unscheduled sections (two locked in place) ready for the solver.
+
+## Setting up a term
+
+1. **Admin → Terms**: add the term, copying meeting patterns from the last one, then add its
+   holidays, breaks and deadlines.
+2. **Admin → Import sections**: load courses and sections from a CSV export. The file is
+   checked first, and nothing is saved until you import it. See
+   [docs/import-sections.md](docs/import-sections.md) for the columns.
+3. **Availability**: instructors mark when they can't teach, would rather not, and prefer.
+   Schedulers can see who hasn't and fill it in for them.
+4. **Builder**: build the timetable, review it, apply it and publish it to the class calendars.
+
+Admin → People, Departments and Rooms are for admins; Terms and Import are also open to
+schedulers.
 
 ## Sign-in modes
 
@@ -87,7 +101,8 @@ npm run solver:test
 npm run typecheck
 ```
 
-API tests cover recurrence expansion (including DST) and role mapping. Solver tests verify each
+API tests cover recurrence expansion (including DST), role mapping, CSV parsing and section import
+planning. Solver tests verify each
 constraint with Timefold's `ConstraintVerifier`, and check that the review report adds up to
 exactly the score Timefold computes.
 

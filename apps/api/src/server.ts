@@ -9,6 +9,7 @@ import { HttpError } from "./lib/errors.ts";
 import { startSubscriber } from "./lib/pubsub.ts";
 import { redis } from "./lib/redis.ts";
 import { startSolveWorker } from "./jobs/queue.ts";
+import { adminRoutes } from "./routes/admin.ts";
 import { authRoutes } from "./routes/auth.ts";
 import { bookingRoutes } from "./routes/bookings.ts";
 import { directoryRoutes } from "./routes/directory.ts";
@@ -51,6 +52,7 @@ export async function buildApp() {
   await app.register(eventRoutes);
   await app.register(bookingRoutes);
   await app.register(schedulingRoutes);
+  await app.register(adminRoutes);
   await app.register(streamRoutes);
   return app;
 }

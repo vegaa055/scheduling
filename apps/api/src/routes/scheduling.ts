@@ -1,8 +1,16 @@
 import type { FastifyInstance } from "fastify";
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { z } from "zod";
-import { solverRunInputSchema, type SectionDTO, type SolverRunDTO } from "@sched/shared";
+import {
+  availabilityBlockSchema,
+  solverRunInputSchema,
+  type AvailabilityBlockDTO,
+  type DayCode,
+  type PatternDTO,
+  type SectionDTO,
+  type SolverRunDTO,
+} from "@sched/shared";
 import { db, schema } from "../db/client.ts";
 import { requireUser } from "../auth/session.ts";
 import { hasRole, requireRole } from "../lib/access.ts";
@@ -96,15 +104,28 @@ export async function schedulingRoutes(app: FastifyInstance) {
     throw forbidden();
   });
 
-  app.get("/terms/:id/patterns", async (req) => {
+  app.get("/terms/:id/patterns", async (req): Promise<PatternDTO[]> => {
     requireUser(req);
     const { id } = z.object({ id: z.uuid() }).parse(req.params);
     const rows = await db
-      .select()
+      .select({
+        p: meetingPatterns,
+        // Qualified by hand: Drizzle leaves table names off columns in single-table queries.
+        sectionCount: sql<number>`(select count(*)::int from sections s where s.meeting_pattern_id = "meeting_patterns"."id")`,
+      })
       .from(meetingPatterns)
       .where(eq(meetingPatterns.termId, id))
       .orderBy(asc(meetingPatterns.family), asc(meetingPatterns.startTime));
-    return rows.map((p) => ({ ...p, label: patternLabel(p) }));
+    return rows.map(({ p, sectionCount }) => ({
+      id: p.id,
+      termId: p.termId,
+      family: p.family,
+      days: p.days as DayCode[],
+      startTime: p.startTime.slice(0, 5),
+      endTime: p.endTime.slice(0, 5),
+      label: patternLabel(p),
+      sectionCount,
+    }));
   });
 
   /** Manual placement and locking. */
@@ -138,10 +159,17 @@ export async function schedulingRoutes(app: FastifyInstance) {
     const { userId } = z.object({ userId: z.uuid().optional() }).parse(req.query);
     const target = userId ?? user.id;
     if (target !== user.id) requireRole(user, "admin", "scheduler");
-    return db
+    const rows = await db
       .select()
       .from(schema.instructorAvailability)
-      .where(and(eq(schema.instructorAvailability.termId, id), eq(schema.instructorAvailability.userId, target)));
+      .where(and(eq(schema.instructorAvailability.termId, id), eq(schema.instructorAvailability.userId, target)))
+      .orderBy(asc(schema.instructorAvailability.day), asc(schema.instructorAvailability.startTime));
+    return rows.map<AvailabilityBlockDTO>((r) => ({
+      day: r.day as DayCode,
+      startTime: r.startTime.slice(0, 5),
+      endTime: r.endTime.slice(0, 5),
+      preference: r.preference,
+    }));
   });
 
   app.put("/terms/:id/availability", async (req) => {
@@ -150,20 +178,12 @@ export async function schedulingRoutes(app: FastifyInstance) {
     const body = z
       .object({
         userId: z.uuid().optional(),
-        blocks: z
-          .array(
-            z.object({
-              day: z.enum(["MO", "TU", "WE", "TH", "FR"]),
-              startTime: z.string().regex(/^\d{2}:\d{2}$/),
-              endTime: z.string().regex(/^\d{2}:\d{2}$/),
-              preference: z.enum(["unavailable", "undesired", "preferred"]),
-            }),
-          )
-          .max(100),
+        blocks: z.array(availabilityBlockSchema).max(200),
       })
       .parse(req.body);
     const target = body.userId ?? user.id;
     if (target !== user.id) requireRole(user, "admin", "scheduler");
+    else requireRole(user, "faculty", "admin", "scheduler");
     await db.transaction(async (tx) => {
       await tx
         .delete(schema.instructorAvailability)

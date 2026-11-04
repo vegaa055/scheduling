@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, DoorOpen, Inbox, LogOut, Moon, Puzzle, Sun } from "lucide-react";
+import { CalendarClock, CalendarDays, DoorOpen, Inbox, LogOut, Moon, Puzzle, Settings2, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -27,7 +27,9 @@ const NAV: { href: string; label: string; icon: typeof CalendarDays; roles?: Rol
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/rooms", label: "Rooms", icon: DoorOpen },
   { href: "/requests", label: "Requests", icon: Inbox },
+  { href: "/availability", label: "Availability", icon: CalendarClock, roles: ["faculty", "admin", "scheduler"] },
   { href: "/builder", label: "Builder", icon: Puzzle, roles: ["admin", "scheduler"] },
+  { href: "/admin", label: "Admin", icon: Settings2, roles: ["admin", "scheduler"] },
 ];
 
 const initials = (name: string) =>
