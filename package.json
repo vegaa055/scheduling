@@ -1,0 +1,22 @@
+{
+  "name": "scheduling",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:api": "npm run dev --workspace=@sched/api",
+    "dev:web": "npm run dev --workspace=web",
+    "infra:up": "docker compose -f infra/docker-compose.yml up -d",
+    "infra:saml": "docker compose -f infra/docker-compose.yml --profile saml up -d",
+    "infra:down": "docker compose -f infra/docker-compose.yml --profile saml --profile solver down",
+    "db:migrate": "npm run db:migrate --workspace=@sched/api",
+    "db:seed": "npm run db:seed --workspace=@sched/api",
+    "solver:build": "node scripts/mvn.mjs -B -q -DskipTests package",
+    "solver:test": "node scripts/mvn.mjs -B -q test",
+    "test": "npm run test --workspace=@sched/api",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}

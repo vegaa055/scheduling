@@ -1,0 +1,11 @@
+package edu.college.scheduling.solver;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class SolverApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(SolverApplication.class, args);
+    }
+}

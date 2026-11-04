@@ -1,0 +1,237 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Brand tokens. Core: Arizona Blue ink, Midnight chrome, Arizona Red reserved for primary
+ * actions and "now". Secondary hues drive calendar colors. Swap these to re-theme the app.
+ */
+:root {
+  --brand-red: #ab0520;
+  --brand-blue: #0c234b;
+  --brand-midnight: #001c48;
+  --brand-cool: #e2e9eb;
+
+  --background: #f4f6f8;
+  --foreground: #0c234b;
+  --card: #ffffff;
+  --card-foreground: #0c234b;
+  --popover: #ffffff;
+  --popover-foreground: #0c234b;
+  --primary: #ab0520;
+  --primary-foreground: #ffffff;
+  --secondary: #e6ecef;
+  --secondary-foreground: #0c234b;
+  --muted: #edf1f3;
+  --muted-foreground: #586a80;
+  --accent: #e2e9eb;
+  --accent-foreground: #0c234b;
+  --destructive: #a3001b;
+  --border: #d9e1e6;
+  --input: #cbd6dc;
+  --ring: #1e5288;
+  --radius: 0.5rem;
+
+  --sidebar: #001c48;
+  --sidebar-foreground: #c9d6e6;
+  --sidebar-primary: #ab0520;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #0c2d5e;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #0e2b57;
+  --sidebar-ring: #81d3eb;
+
+  /* Calendar surfaces */
+  --grid-line: #e4eaee;
+  --grid-line-strong: #cdd8de;
+  --grid-off-hours: #f8fafb;
+  --now: #ab0520;
+  --closure: #f1ece6;
+
+  /* Calendar colors: solid (bar/dot) and ink (text on tint) */
+  --cal-azurite: #1e5288;
+  --cal-azurite-ink: #12365d;
+  --cal-oasis: #378dbd;
+  --cal-oasis-ink: #1c5576;
+  --cal-river: #007d84;
+  --cal-river-ink: #00555a;
+  --cal-leaf: #5a9e4f;
+  --cal-leaf-ink: #2f6526;
+  --cal-mesa: #a95c42;
+  --cal-mesa-ink: #733725;
+  --cal-chili: #8b0015;
+  --cal-chili-ink: #6d0011;
+  --cal-bloom: #e2354f;
+  --cal-bloom-ink: #9c1429;
+  --cal-sky: #3fa8cc;
+  --cal-sky-ink: #1b6582;
+  --cal-midnight: #001c48;
+  --cal-midnight-ink: #001c48;
+  --cal-sage: #557566;
+  --cal-sage-ink: #34503f;
+  --tint: 13%;
+
+  --chart-1: #1e5288;
+  --chart-2: #378dbd;
+  --chart-3: #007d84;
+  --chart-4: #a95c42;
+  --chart-5: #ab0520;
+}
+
+.dark {
+  --background: #061430;
+  --foreground: #e4ebf3;
+  --card: #0a1d3f;
+  --card-foreground: #e4ebf3;
+  --popover: #0d2247;
+  --popover-foreground: #e4ebf3;
+  --primary: #e0243f;
+  --primary-foreground: #ffffff;
+  --secondary: #132a52;
+  --secondary-foreground: #e4ebf3;
+  --muted: #0f2449;
+  --muted-foreground: #93a6bf;
+  --accent: #15305c;
+  --accent-foreground: #ffffff;
+  --destructive: #ff5a6e;
+  --border: #1a3460;
+  --input: #23406f;
+  --ring: #81d3eb;
+
+  --sidebar: #000f2a;
+  --sidebar-foreground: #a9bbd2;
+  --sidebar-accent: #0c2550;
+  --sidebar-border: #0b2148;
+
+  --grid-line: #142c55;
+  --grid-line-strong: #1d3a68;
+  --grid-off-hours: #081936;
+  --now: #ff4d63;
+  --closure: #1a2540;
+
+  --cal-azurite: #5b8fd0;
+  --cal-azurite-ink: #d6e5fa;
+  --cal-oasis: #5fb0de;
+  --cal-oasis-ink: #d3ecfa;
+  --cal-river: #2bb3ba;
+  --cal-river-ink: #cdf3f4;
+  --cal-leaf: #7cc46f;
+  --cal-leaf-ink: #dcf5d6;
+  --cal-mesa: #d28566;
+  --cal-mesa-ink: #fbe1d6;
+  --cal-chili: #e2475d;
+  --cal-chili-ink: #ffd8de;
+  --cal-bloom: #ff6b81;
+  --cal-bloom-ink: #ffdbe1;
+  --cal-sky: #81d3eb;
+  --cal-sky-ink: #dcf5fc;
+  --cal-midnight: #8fa9d6;
+  --cal-midnight-ink: #e1e9f7;
+  --cal-sage: #8fb5a1;
+  --cal-sage-ink: #e0efe6;
+  --tint: 24%;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-hanken);
+  --font-heading: var(--font-hanken);
+  --font-numeral: var(--font-barlow);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-grid: var(--grid-line);
+  --color-grid-strong: var(--grid-line-strong);
+  --color-now: var(--now);
+  --color-brand-red: var(--brand-red);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-midnight: var(--brand-midnight);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    font-feature-settings: "ss01", "cv11";
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .font-numeral {
+    font-family: var(--font-barlow), var(--font-hanken), sans-serif;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Hatching marks closures (holidays/breaks) and tentative events. */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent 0 6px,
+      color-mix(in oklab, var(--muted-foreground) 9%, transparent) 6px 7px
+    );
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--grid-line-strong) transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,48 @@
+name: sched
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: sched
+      POSTGRES_PASSWORD: sched
+      POSTGRES_DB: sched
+    ports: ["5544:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sched"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["6380:6379"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  # Local stand-in for the campus Shibboleth IdP. Test personas live in authsources.php.
+  idp:
+    image: kristophjunge/test-saml-idp:1.15
+    profiles: ["saml"]
+    environment:
+      SIMPLESAMLPHP_SP_ENTITY_ID: http://localhost:3000/api/auth/saml/metadata
+      SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE: http://localhost:3000/api/auth/saml/acs
+    ports: ["8085:8080"]
+    volumes:
+      - ./simplesamlphp/authsources.php:/var/www/simplesamlphp/config/authsources.php:ro
+
+  # Timefold timetabling service. For local development you can also run it with ./mvnw.
+  solver:
+    build: ../services/solver
+    profiles: ["solver"]
+    ports: ["8095:8095"]
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx1g"
+
+volumes:
+  pgdata:
+  redisdata:
