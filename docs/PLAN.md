@@ -133,8 +133,8 @@ As of 2026-11-04.
 | 1 Data and API | Done | Schema and migration, seed, events CRUD with recurrence scopes, room and person conflicts, Redis cache, audit log | API integration tests (only unit tests exist) |
 | 2 Calendar experience | Done | Day, week, month and agenda views, term ribbon, drag to create, move and resize, editor with repeat rules, room picker, live conflicts, Rooms board, light and dark themes | ICS import; phone layout not yet tested on a device |
 | 3 Authentication | Done | SAML round trip against SimpleSAMLphp (assertion validation, replay rejection, return URL, provisioning, role mapping), dev mode | Header mode is written but untested; registering with the campus IdP |
-| 4 Constraint engine | Done | Timefold service, 8 passing tests, BullMQ job, live progress, score review, apply, publish (holidays skipped) | Faculty availability editing UI (the API exists) |
-| 5 Workflow and polish | Started | Room request approvals, live updates over SSE | Email notifications, ICS feeds, admin screens (users, rooms, terms, patterns), WCAG audit, Playwright tests, deployment |
+| 4 Constraint engine | Done | Timefold service, 8 passing tests, BullMQ job, live progress, score review, apply, publish (holidays skipped) | |
+| 5 Workflow and polish | Started | Room request approvals, live updates over SSE. Admin screens for people and roles, departments, buildings and rooms, terms, term dates and meeting patterns. Course and section CSV import with a checked preview ([format](import-sections.md)). Teaching availability editor for faculty, and for schedulers on anyone's behalf | Email notifications, ICS feeds, WCAG audit, Playwright tests, deployment |
 
 ### Findings along the way
 
@@ -142,3 +142,9 @@ As of 2026-11-04.
   scores with its own `ScoreReport`, and a test checks it against Timefold's score.
 - Timefold 2.x renamed several APIs (`allowsUnassigned`, `ai.timefold.solver.core.api.score.*`,
   `solveBuilder()`, `ConstraintRef.id()`); the code targets 2.8.0.
+- Drizzle leaves table names off columns in single-table queries, so a correlated subquery
+  written with `sql` and column objects compares a table with itself. Those subqueries name
+  their tables by hand.
+- Next.js 16 checks in development that every page can render on the server ("instant
+  navigation"). A layout that waits for the signed-in user before rendering its page fails that
+  check, so admin pages always render and show a placeholder until the browser takes over.

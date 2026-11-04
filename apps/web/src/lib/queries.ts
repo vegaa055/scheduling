@@ -2,11 +2,17 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
+  AdminUserDTO,
+  AvailabilityBlockDTO,
   BookingDTO,
+  BuildingDTO,
   CalendarDTO,
   ConflictDTO,
+  DepartmentDTO,
   EventDetailDTO,
   OccurrenceDTO,
+  PatternDTO,
+  Role,
   RoomBusyDTO,
   RoomDTO,
   SectionDTO,
@@ -15,6 +21,8 @@ import type {
   UserDTO,
 } from "@sched/shared";
 import { api } from "./api";
+
+export type { PatternDTO };
 
 export interface Me {
   user: UserDTO & { departmentName: string | null };
@@ -34,6 +42,11 @@ export const qk = {
   patterns: (termId: string) => ["patterns", termId] as const,
   runs: (termId: string) => ["solver-runs", termId] as const,
   run: (id: string) => ["solver-run", id] as const,
+  adminUsers: (q: string, role: string) => ["admin-users", q, role] as const,
+  departments: ["admin-departments"] as const,
+  buildings: ["admin-buildings"] as const,
+  availability: (termId: string, userId: string) => ["availability", termId, userId] as const,
+  availabilitySummary: (termId: string) => ["availability-summary", termId] as const,
 };
 
 export const useMe = () => useQuery({ queryKey: qk.me, queryFn: () => api<Me>("/me"), staleTime: 5 * 60_000 });
@@ -79,14 +92,6 @@ export const usePendingCount = (enabled: boolean) =>
 export const useSections = (termId: string | undefined) =>
   useQuery({ queryKey: qk.sections(termId ?? ""), queryFn: () => api<SectionDTO[]>(`/terms/${termId}/sections`), enabled: !!termId });
 
-export interface PatternDTO {
-  id: string;
-  family: string;
-  days: string[];
-  startTime: string;
-  endTime: string;
-  label: string;
-}
 export const usePatterns = (termId: string | undefined) =>
   useQuery({ queryKey: qk.patterns(termId ?? ""), queryFn: () => api<PatternDTO[]>(`/terms/${termId}/patterns`), enabled: !!termId });
 
@@ -105,6 +110,40 @@ export interface Person {
 }
 export const usePeople = (q: string) =>
   useQuery({ queryKey: ["people", q], queryFn: () => api<Person[]>(`/people?q=${encodeURIComponent(q)}`), placeholderData: keepPreviousData });
+
+/* ---------------- Admin ---------------- */
+
+export const useAdminUsers = (q: string, role: Role | "all") =>
+  useQuery({
+    queryKey: qk.adminUsers(q, role),
+    queryFn: () => api<AdminUserDTO[]>(`/admin/users?q=${encodeURIComponent(q)}${role === "all" ? "" : `&role=${role}`}`),
+    placeholderData: keepPreviousData,
+  });
+
+export const useDepartments = () =>
+  useQuery({ queryKey: qk.departments, queryFn: () => api<DepartmentDTO[]>("/admin/departments") });
+
+export const useBuildings = () => useQuery({ queryKey: qk.buildings, queryFn: () => api<BuildingDTO[]>("/admin/buildings") });
+
+export const useAvailability = (termId: string | undefined, userId: string | undefined, self: boolean) =>
+  useQuery({
+    queryKey: qk.availability(termId ?? "", userId ?? ""),
+    queryFn: () => api<AvailabilityBlockDTO[]>(`/terms/${termId}/availability${self ? "" : `?userId=${userId}`}`),
+    enabled: !!termId && !!userId,
+  });
+
+export interface InstructorSummary {
+  id: string;
+  displayName: string;
+  netid: string;
+  blocks: number;
+}
+export const useAvailabilitySummary = (termId: string | undefined, enabled: boolean) =>
+  useQuery({
+    queryKey: qk.availabilitySummary(termId ?? ""),
+    queryFn: () => api<InstructorSummary[]>(`/terms/${termId}/availability/summary`),
+    enabled: enabled && !!termId,
+  });
 
 /** Invalidate everything that shows events. */
 export function useInvalidateCalendar() {

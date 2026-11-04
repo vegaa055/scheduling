@@ -22,6 +22,7 @@ export async function roomList(): Promise<RoomDTO[]> {
     .orderBy(asc(buildings.code), asc(rooms.number));
   return rows.map(({ room, building }) => ({
     id: room.id,
+    buildingId: building.id,
     buildingCode: building.code,
     buildingName: building.name,
     number: room.number,
@@ -32,6 +33,7 @@ export async function roomList(): Promise<RoomDTO[]> {
     kind: room.kind,
     bookable: room.bookable,
     requiresApproval: room.requiresApproval,
+    schedulable: room.schedulable,
   }));
 }
 

@@ -6,6 +6,8 @@ export class ApiError extends Error {
     public code: string,
     message: string,
     public conflicts: ConflictDTO[] = [],
+    /** Per-field validation messages from a 400 response. */
+    public issues: { path: string; message: string }[] = [],
   ) {
     super(message);
   }
@@ -33,7 +35,7 @@ export async function api<T>(path: string, init?: RequestInit & { json?: unknown
     } catch {
       /* not JSON */
     }
-    throw new ApiError(res.status, body.error ?? "error", body.message ?? res.statusText, body.conflicts ?? []);
+    throw new ApiError(res.status, body.error ?? "error", body.message ?? res.statusText, body.conflicts ?? [], body.issues ?? []);
   }
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
